@@ -1,0 +1,5 @@
+*.hmm
+*.o
+prog
+*.csv
+*.txt
