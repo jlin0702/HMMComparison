@@ -3,3 +3,4 @@
 prog
 *.csv
 *.txt
+*.DS_Store
