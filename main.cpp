@@ -27,6 +27,11 @@ int main(int argc, char* argv[])
                 i++;
                 subjectFile = argv[i];
             }
+            else if (arg.substr(1) == "o")
+            {
+                i++;
+                *stdout = *fopen(argv[i], "w");
+            }
             else
             {
                 std::cout << "Unrecognized argument: " << argv[i] << '\n';
