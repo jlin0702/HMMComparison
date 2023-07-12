@@ -143,6 +143,10 @@ void HMMComparison::show()
     // std::cout << '\n';
     
     std::cout << "Score: " << largestMMScore_ << '\n';
+    
+    double eVal = (hmm1_.length_ * hmm2_.length_) / pow(2, largestMMScore_);
+    std::cout << "E-value: " << eVal << '\n';
+    // std::cout << largestMMScore_ << ',' << eVal << '\n';
 }
 
 void HMMComparison::parseFile(HMM& hmm, std::vector<char>& largestSymbols)
