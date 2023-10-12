@@ -6,13 +6,30 @@ static void invalidArgs()
     exit(1);
 }
 
+static void usageAndDie(){
+	std::cout << "Usage: ./prog [-h] [-query <query_file>]\n"
+	<< "\t[-subject <subject_file>] [-s]\n"
+    << "Details:\n"
+    << "-h\n\tOpen usage manual\n"
+    << "-query <query_file>\n\tFirst hmm file\n"
+    << "-subject <subject_file\n\tSecond hmm file\n"
+    << "-s\n\tOutput in format of score,evalue\n"
+	;
+	exit(0);
+}
+
 int main(int argc, char* argv[])
 {
     if (argc <= 1)
         invalidArgs();
 
-   const char* queryFile = NULL;
-   const char* subjectFile = NULL;
+    const char* queryFile = NULL;
+    const char* subjectFile = NULL;
+    bool simple = false;
+    if (strcmp(argv[1],"-h") == 0)
+    {
+        usageAndDie();
+    }
     for (int i = 1; i < argc; i++)
     {
         if (argv[i][0] == '-') {
@@ -32,6 +49,10 @@ int main(int argc, char* argv[])
                 i++;
                 *stdout = *fopen(argv[i], "w");
             }
+            else if (arg.substr(1) == "s")
+            {
+                simple = true;
+            }
             else
             {
                 std::cout << "Unrecognized argument: " << argv[i] << '\n';
@@ -41,7 +62,7 @@ int main(int argc, char* argv[])
     }
     if (queryFile == NULL || subjectFile == NULL)
         invalidArgs();
-    HMMComparison hmmComp(queryFile, subjectFile);
+    HMMComparison hmmComp(queryFile, subjectFile, simple);
     hmmComp.compare();
     return 0;
 }

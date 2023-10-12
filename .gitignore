@@ -1,6 +1,7 @@
-*.hmm
-*.o
-prog
-*.csv
-*.txt
-*.DS_Store
+*
+!.gitignore
+!hmmComparison.h
+!hmmComparison.cpp
+!Makefile
+!main.cpp
+!README.md

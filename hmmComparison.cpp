@@ -23,13 +23,14 @@ std::vector<std::string> split(std::string s)
     return tokens;
 }
 
-HMMComparison::HMMComparison(std::string filePath1, std::string filePath2)
+HMMComparison::HMMComparison(std::string filePath1, std::string filePath2, bool simple)
 {
     largestMMScore_ = 0;
     largestI_ = 0;
     largestJ_ = 0;
     hmm1_.filePath_ = filePath1;
     hmm2_.filePath_ = filePath2;
+    simple_ = simple;
     parseFile(hmm1_, largestSymbols1_);
     parseFile(hmm2_, largestSymbols2_);
     if (hmm1_.hmmType_ != hmm2_.hmmType_ )
@@ -60,11 +61,19 @@ void HMMComparison::compare()
     calcSaa();
     fillTables();
     show();
-    // for (int i = 0; i < mm.size(); i++)
+    // for (int i = 0; i < mm_.size(); i++)
     // {
     //     for (int j = 0; j < mm_[0].size(); j++)
     //     {
     //         std::cout << mm_[i][j]->score_ << "\t";
+    //     }
+    //     std::cout << '\n';
+    // }
+    // for (int i = 0; i < saaMM_.size(); i++)
+    // {
+    //     for (int j = 0; j < saaMM_[0].size(); j++)
+    //     {
+    //         std::cout << saaMM_[i][j] << "\t";
     //     }
     //     std::cout << '\n';
     // }
@@ -97,56 +106,52 @@ void HMMComparison::show()
         hmm2_state_seq.push_back(std::make_pair(state2, symbol2));
     }
 
-    std::cout << hmm1_.filePath_ << '\n';
-    //prints the states
-    std::cout << "States: \n";
-    for (int i = 0; i < hmm1_state_seq.size(); ++i)
-    {
-        std::cout << hmm1_state_seq[i].first << ' ';
-    }
-    std::cout << '\n';
-    //prints the amino acid/dna sequence
-    if (hmm1_.hmmType_ == "amino")
-        std::cout << "Amino acid sequence: \n";
-    else if (hmm1_.hmmType_ == "DNA")
-        std::cout << "DNA sequence: \n";
-    for (int i = 0; i < hmm1_state_seq.size(); ++i)
-    {
-        std::cout << hmm1_state_seq[i].second << ' ';
-    }
-    std::cout << "\n\n";
-    
-    std::cout << hmm2_.filePath_ << '\n';
-    //prints the states
-    std::cout << "States: \n";
-    for (int i = 0; i < hmm2_state_seq.size(); ++i)
-    {
-        std::cout << hmm2_state_seq[i].first << ' ';
-    }
-    std::cout << '\n';
-    //prints the amino acid/dna sequence
-    if (hmm2_.hmmType_ == "amino")
-        std::cout << "Amino acid sequence: \n";
-    else if (hmm2_.hmmType_ == "DNA")
-        std::cout << "DNA sequence: \n";
-    for (int i = 0; i < hmm1_state_seq.size(); ++i)
-    {
-        std::cout << hmm2_state_seq[i].second << ' ';
-    }
-    std::cout << "\n\n";
-
-    // std::cout << "Pair states:\n";
-    // for (int i = 0; i < hmm1_state_seq.size(); ++i)
-    // {
-    //     std::cout << hmm1_state_seq[i].first << hmm2_state_seq[i].first << ' ';
-    // }
-    // std::cout << '\n';
-    
-    std::cout << "Score: " << largestMMScore_ << '\n';
-    
     double eVal = (hmm1_.length_ * hmm2_.length_) / pow(2, largestMMScore_);
-    std::cout << "E-value: " << eVal << '\n';
-    // std::cout << largestMMScore_ << ',' << eVal << '\n';
+    if (!simple_)
+    {
+        std::cout << hmm1_.filePath_ << '\n';
+        //prints the states
+        std::cout << "States: \n";
+        for (int i = 0; i < hmm1_state_seq.size(); ++i)
+        {
+            std::cout << hmm1_state_seq[i].first << ' ';
+        }
+        std::cout << '\n';
+        //prints the amino acid/dna sequence
+        if (hmm1_.hmmType_ == "amino")
+            std::cout << "Amino acid sequence: \n";
+        else if (hmm1_.hmmType_ == "DNA")
+            std::cout << "DNA sequence: \n";
+        for (int i = 0; i < hmm1_state_seq.size(); ++i)
+        {
+            std::cout << hmm1_state_seq[i].second << ' ';
+        }
+        std::cout << "\n\n";
+        
+        std::cout << hmm2_.filePath_ << '\n';
+        //prints the states
+        std::cout << "States: \n";
+        for (int i = 0; i < hmm2_state_seq.size(); ++i)
+        {
+            std::cout << hmm2_state_seq[i].first << ' ';
+        }
+        std::cout << '\n';
+        //prints the amino acid/dna sequence
+        if (hmm2_.hmmType_ == "amino")
+            std::cout << "Amino acid sequence: \n";
+        else if (hmm2_.hmmType_ == "DNA")
+            std::cout << "DNA sequence: \n";
+        for (int i = 0; i < hmm1_state_seq.size(); ++i)
+        {
+            std::cout << hmm2_state_seq[i].second << ' ';
+        }
+        std::cout << "\n\n";
+        
+        std::cout << "Score: " << largestMMScore_ << '\n';
+        std::cout << "E-value: " << eVal << '\n';
+    }
+    else
+        std::cout << largestMMScore_ << "," << eVal << '\n';
 }
 
 void HMMComparison::parseFile(HMM& hmm, std::vector<char>& largestSymbols)
@@ -175,6 +180,10 @@ void HMMComparison::parseFile(HMM& hmm, std::vector<char>& largestSymbols)
     }
     std::getline(inFile, str);
     std::getline(inFile, str);
+    std::vector<std::string> tokens = split(str);
+    for (int i = 1; i < 21; i++) {
+        hmm.nullModel_[i-1] = exp(-1 * std::stod(tokens[i]));
+    }
     std::getline(inFile, str);
     std::getline(inFile, str);
     int count = 0;
@@ -277,7 +286,7 @@ void HMMComparison::fillTables()
             double temp6, temp7;
             temp6 = mm_[i-1][j]->score_ + std::log(hmm1_.stateTransitions_[i-1][0] * hmm2_.stateTransitions_[j][1]);
             temp7 = mi_[i-1][j]->score_ + std::log(hmm1_.stateTransitions_[i-1][0] * hmm2_.stateTransitions_[j][4]);
-            mi_[i][j]->score_ = saaMI_[i][j] + std::max(temp6, temp7);
+            mi_[i][j]->score_ = std::max(temp6, temp7);
             if (temp6 > temp7)
                 mi_[i][j]->backtrackPtr_ = mm_[i-1][j];
             else
@@ -286,7 +295,7 @@ void HMMComparison::fillTables()
             double temp8, temp9;
             temp8 = mm_[i][j-1]->score_ + std::log(hmm1_.stateTransitions_[i][1] * hmm2_.stateTransitions_[j-1][0]);
             temp9 = im_[i][j-1]->score_ + std::log(hmm1_.stateTransitions_[i][4] * hmm2_.stateTransitions_[j-1][0]);
-            im_[i][j]->score_ = saaIM_[i][j] + std::max(temp8, temp9);
+            im_[i][j]->score_ = std::max(temp8, temp9);
             if (temp8 > temp9)
                 im_[i][j]->backtrackPtr_ = mm_[i][j-1];
             else
@@ -328,6 +337,14 @@ void HMMComparison::initialize()
             // Node n1, n2, n3, n4, n5;
             mm_[i].push_back(new Node);
             mm_[i][j]->type_ = "mm";
+            if (i == 0)
+            {
+                mm_[i][j]->score_ = 0;
+            }
+            if (j == 0)
+            {
+                mm_[i][j]->score_ = 0;
+            }
             mi_[i].push_back(new Node);
             mi_[i][j]->type_ = "mi";
             im_[i].push_back(new Node);
@@ -346,27 +363,17 @@ void HMMComparison::calcSaa()
 {
     for (int i = 0; i < hmm1_.length_; ++i)
     {
-        std::vector<double> temp1, temp2, temp3;
+        std::vector<double> temp1;
         saaMM_.push_back(temp1);
-        saaMI_.push_back(temp2);
-        saaIM_.push_back(temp3);
         for (int j = 0; j < hmm2_.length_; ++j)
         {
             double totalMM = 0;
-            double totalMI = 0;
-            double totalIM = 0;
             for (int a = 0; a < hmm1_.maxSymbols_; ++a)
             {
-                totalMM += hmm1_.matchEmissions_[i][a] * hmm2_.matchEmissions_[j][a] * hmm1_.maxSymbols_;
-                totalMI += hmm1_.matchEmissions_[i][a] * hmm2_.insertEmissions_[j][a] * hmm1_.maxSymbols_;
-                totalIM += hmm1_.insertEmissions_[i][a] * hmm2_.matchEmissions_[j][a] * hmm1_.maxSymbols_;
+                totalMM += hmm1_.matchEmissions_[i][a] * hmm2_.matchEmissions_[j][a] / ((hmm1_.nullModel_[a] + hmm2_.nullModel_[a]) / 2);
             }
             double saaMMNum = std::log(totalMM);
-            double saaMINum = std::log(totalMI);
-            double saaIMNum = std::log(totalIM);
             saaMM_[i].push_back(saaMMNum);
-            saaMI_[i].push_back(saaMINum);
-            saaIM_[i].push_back(saaIMNum);
         }
     }
 }

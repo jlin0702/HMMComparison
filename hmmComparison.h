@@ -7,6 +7,7 @@
 #include <vector>
 #include <utility>
 #include <cmath>
+#include <limits>
 
 const char AMINOACIDS[20] = {'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y'};
 const char DNA[4] = {'A', 'C', 'G', 'T'};
@@ -26,7 +27,7 @@ class HMMComparison
         Node()
         {
             type_ = "";
-            score_ = 0;
+            score_ = -1 * std::numeric_limits<float>::infinity();
             backtrackPtr_ = nullptr;
         }
     };
@@ -41,6 +42,7 @@ class HMMComparison
         std::vector<std::vector<double>> stateTransitions_;
         std::vector<std::vector<double>> matchEmissions_;
         std::vector<std::vector<double>> insertEmissions_;
+        double nullModel_[20];
         int length_;
     };
 
@@ -50,10 +52,8 @@ class HMMComparison
     //finds where the largest indices are in S_mm matrix
     int largestI_;
     int largestJ_;
-    //saa calculations
+    //saa calculation
     std::vector<std::vector<double>> saaMM_;
-    std::vector<std::vector<double>> saaMI_;
-    std::vector<std::vector<double>> saaIM_;
     std::vector<std::vector<Node*>> mm_;
     std::vector<std::vector<Node*>> mi_;
     std::vector<std::vector<Node*>> im_;
@@ -62,6 +62,7 @@ class HMMComparison
     //amino acids with largest probability on each line for each hmm
     std::vector<char> largestSymbols1_;
     std::vector<char> largestSymbols2_;
+    bool simple_;
 
     //calculates S_aa
     void calcSaa();
@@ -88,7 +89,7 @@ class HMMComparison
     void parseFile(HMM& hmm, std::vector<char>& largestAminoAcids);
 
     public:
-    HMMComparison(std::string filePath1, std::string filePath2);
+    HMMComparison(std::string filePath1, std::string filePath2, bool simple);
     ~HMMComparison();
 
     //public function to run the code
